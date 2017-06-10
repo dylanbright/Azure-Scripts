@@ -2,13 +2,17 @@
 .SYNOPSIS
   Returns a list of IPs or next available subnet of specified size.
 .DESCRIPTION
-  <Brief description of script>
-.PARAMETER <Parameter_Name>
-    <Brief description of parameter input required. Repeat this attribute if required>
+   Returns a list of IPs or next available subnet of specified size.
+.PARAMETER 
+       -vnetName              Name of the vnet
+       -ResourceGroupName     Name of vnet Resource Group
+       -AddressSpace          Address space in CIDR
+       -NextSub               Valid values 29,28,27,26,25,24.  Bits for the size of the subet we want to find.  If This is specified, then we fill find the next available subnet.  If not script will report all IPs in the address space and the subnets consuming them.
+
 .INPUTS
-  <Inputs if any, otherwise state None>
+    none
 .OUTPUTS
-  <Outputs if any, otherwise state None - example: Log file stored in C:\Windows\Temp\<name>.log>
+   Subnet in CIDR or List of IP addresses as hash table.
 .NOTES
   Version:        1.0
   Author:         Dylan Bright
@@ -29,7 +33,7 @@ param (
        [Parameter(Mandatory=$True)][string]$vnetName,      #Name of the vnet
        [Parameter(Mandatory=$True)][string]$ResourceGroupName, #Name of vnet Resource Group
        [Parameter(Mandatory=$True)][string]$AddressSpace,  #Address space in CIDR
-       [ValidateSet(29,28,27,26,25,24,$null)] [Int32]$NextSub )   #Bits for the size of the subet we want to find.  If This is specified, then we fill find the next available subnet.  If not we will report all IPs in the address space and the subnets consuming them.
+       [ValidateSet(29,28,27,26,25,24)] [Int32]$NextSub )   #Bits for the size of the subet we want to find.  If This is specified, then we fill find the next available subnet.  If not we will report all IPs in the address space and the subnets consuming them.
 
 #IP Address Functions#########################
 function Get-IPrange {
@@ -147,17 +151,16 @@ function FindNextAvailableSubnet {
     }
 
     ForEach ($item in $IPHT.GetEnumerator()){
-        If ($AvailableIPCounter -eq 0 -and $item.Value -eq "Available") { #If this condition is true we have found the potential first avaiable IP address.
+        If ($AvailableIPCounter -eq 0 -and $item.Value -eq "Available" -and $validStartOctet -contains $item.key.Split(".")[3] ) { #If this condition is true we have found the potential first avaiable IP address.
             $StartingIP = $item.key
             $AvailableIPCounter = 1  #Start the counter at 1 IP
         }
         If ($AvailableIPCounter -gt 0 -and $item.value -eq "Available") { 
             $AvailableIPCounter += 1 #Increment the counter.
             If ($AvailableIPCounter -eq $numberOfIPs){ #Check to see if we have all the contiguous IPs we need.  If so, return the subnet in cidr format
-                #Added Valid CIDR Block test.
-                If ($validStartOctet -contains $StartingIP.Split(".")[3]) {
+
                     Return $StartingIP + "/" + $cidr
-                }
+
             }
             
         } Else { #If the next IP was not available and we don't have all the IPs we need, set counter back to 0.
@@ -165,7 +168,7 @@ function FindNextAvailableSubnet {
                 
         }
     }
-    #If we loop through alll the IP Addresses in the subnet and not enough contiguous IPs are found, then there are not enough contiguous IPs for the requested subnet size.
+    #If we loop through alll the IP Addresses in the address space and not enough contiguous IPs are found, then there are not enough contiguous IPs for the requested subnet size.
     return "Not enough contiguous IPs available"
 }
 #End IP Discovery functions
