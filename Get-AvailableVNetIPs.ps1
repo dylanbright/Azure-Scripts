@@ -35,7 +35,7 @@ param (
        [Parameter(Mandatory=$True)][string]$AddressSpace,  #Address space in CIDR
        [ValidateSet(29,28,27,26,25,24)] [Int32]$NextSub )   #Bits for the size of the subet we want to find.  If This is specified, then we fill find the next available subnet.  If not we will report all IPs in the address space and the subnets consuming them.
 
-#IP Address Functions#########################
+#IP Address Functions##########################
 function Get-IPrange {
 <# 
   .SYNOPSIS  
