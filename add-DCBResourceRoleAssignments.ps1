@@ -68,7 +68,7 @@ $resources = Get-AzureRmResource -ResourceGroupName $ResourceGroupName
 $ADObjectIDs = $null #zero this out between runs.
 $ADObjectIDs = Get-AzureADObjectID -ADObjectNames $ADNameAndTypeHash
 #Before we start get the current role assignments
-Get-AzureRmRoleAssignment -Scope $resourceGroup.ResourceId | ft Scope,DisplayName,RoleDefinitionName
+Get-AzureRmRoleAssignment -Scope $resourceGroup.ResourceId | Format-Table Scope,DisplayName,RoleDefinitionName
 
 foreach ($resource in $resources) {
     #Get any applicable rules to apply at the ResourceGroup level
@@ -82,5 +82,4 @@ foreach ($resource in $resources) {
         New-RoleAssignmentForArrayOfObjects -scope $resource.ResourceId -ObjectIDs $ADObjectIDs -roleDefinitionName $ResourceRBACRule.roleDefinitionName
     }
 }
-Get-AzureRmRoleAssignment -Scope $resourceGroup.ResourceId | ft Scope,DisplayName,RoleDefinitionName
-$Transcript 
+Get-AzureRmRoleAssignment -Scope $resourceGroup.ResourceId | Format-Table Scope,DisplayName,RoleDefinitionName
