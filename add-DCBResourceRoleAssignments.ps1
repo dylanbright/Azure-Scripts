@@ -1,7 +1,7 @@
 param (
-    $subscriptionName,
-    $ResourceGroupName = "testwithvm",
-    $ADNameAndTypeHash = @{"dylan"="user";"testgroup"="group"} #Hashtable of object names and types e.g. "dylan.bright@pwc.com" = "user"
+    [string]$subscriptionName,
+    [string]$ResourceGroupName,
+    [System.Collections.Hashtable]$ADNameAndTypeHash #Hashtable of object names and types e.g. "dylan.bright@pwc.com" = "user"
     )  
 
 
@@ -38,6 +38,7 @@ function get-AzureADObjectID ($ADObjectNames){
             "user"  {$ADObjectIDs += (Get-AzureRmADUser -SearchString $h.Name)[0].Id } 
             "spn"   {$ADObjectIDs += (Get-AzureRmADServicePrincipal -SearchString $h.Name)[0].Id}
             "ID"    {$ADObjectIDs += $h.Name}
+            default {Throw "Invalid ADObject Type.  Type must be group, user, spn, or ID"}
         }
     }
     return $ADObjectIDs

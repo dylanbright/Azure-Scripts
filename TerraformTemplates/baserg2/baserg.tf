@@ -23,3 +23,4 @@ resource "azurerm_resource_group" "DCB-BASE-RG-001" {
     environment = "Prod"
   }
 }
+
